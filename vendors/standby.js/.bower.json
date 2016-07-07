@@ -1,0 +1,14 @@
+{
+  "name": "standby.js",
+  "homepage": "https://github.com/littledesu/standby.js",
+  "version": "1.0.0",
+  "_release": "1.0.0",
+  "_resolution": {
+    "type": "version",
+    "tag": "v1.0.0",
+    "commit": "2c4e86693e0d26bf875928ec3ab3b793feb35613"
+  },
+  "_source": "git://github.com/littledesu/standby.js.git",
+  "_target": "1.0.0",
+  "_originalSource": "standby.js"
+}

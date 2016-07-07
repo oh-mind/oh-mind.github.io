@@ -1,0 +1,28 @@
+{
+  "name": "Likely",
+  "version": "2.0.8",
+  "homepage": "http://ilyabirman.ru/projects/likely",
+  "authors": [
+    "Ilya Birman <ilyabirman@ilyabirman.ru>",
+    "Evgeny Steblinsky <volter925@gmail.com>"
+  ],
+  "main": [
+    "release/likely.css",
+    "release/likely.js"
+  ],
+  "description": "The social sharing buttons that aren’t shabby",
+  "keywords": [
+    "social",
+    "buttons"
+  ],
+  "license": "MIT",
+  "_release": "2.0.8",
+  "_resolution": {
+    "type": "version",
+    "tag": "v2.0.8",
+    "commit": "f37df6cbd8874f86be0df0358c46d72050ef5934"
+  },
+  "_source": "git://github.com/ilyabirman/Likely.git",
+  "_target": "*",
+  "_originalSource": "ilyabirman-likely"
+}
