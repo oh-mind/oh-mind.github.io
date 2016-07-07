@@ -1,0 +1,331 @@
+<!doctype html>
+<html>
+<head>
+    <title>Oh, mind</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Oh, mind" />
+    <meta name="viewport" content="user-scalable=0, initial-scale=1.0" />
+    <meta property="og:title" content="Oh, mind" />
+    <meta property="og:url" content="http://oh-mind.com" />
+    <meta property="og:image" content="/img/ogimage.png" />
+    <link type="text/css" rel="stylesheet" href="/css/normalize.css">
+    <link type="text/css" rel="stylesheet" href="/css/main.css">
+    <script src="//code.jquery.com/jquery-2.1.0.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/screenfull.js/1.0.4/screenfull.min.js"></script>
+    <script src="/js/cookies.min.js"></script>
+    <script src="/js/likely/likely.js"></script>
+    <script src="/vendors/standby.js/standby.js"></script>
+    <script src="/vendors/arg.js/dist/arg-1.2.min.js"></script>
+    <link rel="stylesheet" href="/js/likely/likely.css">
+    <link href='//fonts.googleapis.com/css?family=Roboto:100,400,300&subset=latin,cyrillic-ext' rel='stylesheet' type='text/css'>
+    <link rel="icon" type="image/png" href="/img/icon.png" />
+    <link rel="apple-touch-icon" href="/img/icon.png" />
+</head>
+
+<body class="main">
+    <div id="semilayer" class=""></div>
+    <header>
+        <h1>Oh, mind</h1> 
+        <h2>PREVIEW</h2>
+    </header>
+    <section>
+        <div class="button-wrapper">
+            <a id="start" class="startButton start" href="#">Start</a>
+            <a id="pause" class="startButton continue" href="#">Continue</a>
+        </div>
+        
+    </section>
+    <footer>
+        <div class="authorsBox">
+            <ul class="authors">
+                <li>
+                    <h3>DESIGN & IDEA</h3> 
+                    <a class="author" href="http://vk.com/artzh">A. Zharov</a>
+                </li>
+                <li>
+                    <h3>CODE & WEED</h3> 
+                    <a class="author" href="http://vk.com/idonotexists">A. Sorokin</a>
+                </li>
+            </ul>
+        </div>
+        <div class="shareBox">
+            <ul class="shareButtons">
+                <div class="likely likely-light" data-url="http://oh-mind.com">
+                    <div class="facebook">Share</div>
+                    <div class="twitter">Tweet</div>
+                    <div class="vkontakte">Share</div>
+                </div>
+            </ul>
+        </div>
+        <div class="socialCommunitiesBox">
+            <ul class="socials">
+                <li>
+                    <h3>COMMUNITY</h3>
+                    <a class="author" style="text-decoration: underline" href="https://vk.com/oh.mind">vk.com/oh.mind</a>
+                </li>
+            </ul>
+        </div>
+    </footer>
+    <div class="playLogo">Oh, mind</div>
+
+    <script>
+        var pictures = new function() {
+            //"use strict";
+
+            var config = {
+                picturesInCycle:            Arg('picturesInCycle', 12),
+                cyclesCountBeforeChange:    Arg('cyclesCountBeforeChange', 1),
+                changePicturesCount:        Arg('changePicturesCount', 2),
+                speed:                      Arg('speed', 300),
+                source:                     Arg('source', 'tumblr')
+            };
+
+
+            const PICTURES_IN_CYCLE          = 12;
+            const CYCLES_COUNT_BEFORE_CHANGE = 1;
+            const CHANGE_PICTURES_COUNT      = 2;
+
+            var __params = {
+                tag: Arg('tag', 'gif'),
+                api_key: 'fuiKNFp9vQFvjLNvx4sUwti4Yb5yGutBN4Xh10LXZhhRKjWlV4'
+            };
+
+            var before = Cookies.get(config.source + __params.tag + 'before');
+
+            if (before) {
+                __params.before = before;
+            }
+
+            this.urls = [];
+            this.currentCycle = 0;
+            this.currentPosition = 0;
+
+            this.preLoad = function(limit) {
+                limit = typeof limit !== 'undefined' ? limit : 20;
+                __params.limit = limit;
+                return this[config.source](__params);
+            };
+
+            this.addUrl = function(url) {
+                this.urls.push(url);
+            };
+
+            this.start = function() {
+                this.preLoad();
+
+                setInterval(function(){
+                    if (state == STATE_MAIN) {
+                        return;
+                    }
+
+                    if (pictures.urls.length <= PICTURES_IN_CYCLE) {
+                        pictures.preLoad(CHANGE_PICTURES_COUNT);
+                        return;
+                    }
+
+                    if (pictures.currentPosition >= PICTURES_IN_CYCLE) {
+                        pictures.currentPosition = 0;
+                        pictures.currentCycle++;
+                    }
+
+                    if (pictures.currentCycle >= CYCLES_COUNT_BEFORE_CHANGE && state == STATE_PLAY) {
+                        pictures.currentCycle = 0;
+                        pictures.urls.splice(0, CHANGE_PICTURES_COUNT);
+                        pictures.preLoad(CHANGE_PICTURES_COUNT);
+                    }
+
+                    document.body.style.backgroundImage = 'url("' + pictures.urls[pictures.currentPosition] + '")';
+
+                    pictures.currentPosition++;
+                }, config.speed)
+            };
+
+            this.tumblr = function (params) {
+                $.ajax({
+                    url: 'http://api.tumblr.com/v2/tagged',
+                    data: params,
+                    dataType: 'jsonp',
+                    success: function(data) {
+                        data.response.forEach(function(item){
+                            if (item.hasOwnProperty('photos')) {
+                                var url = item.photos.shift().original_size.url;
+                                var object = new Image();
+                                object.src = url;
+                                pictures.addUrl(url);
+                            }
+
+                            __params.before = item.featured_timestamp;
+                            Cookies.set(config.source + __params.tag + 'before', item.featured_timestamp, { expires: 60 * 60 * 24 });
+                        });
+                    }
+                });
+            };
+
+            this.ohmind = function (params) {
+                $.ajax({
+                    url: 'http://api.oblakotilo.com/pictures',
+                    data: params,
+                    dataType: 'jsonp',
+                    success: function(data) {
+                        if (data.length == 0) {
+                            Cookies.set(config.source + __params.tag + 'before', 0, { expires: 60 * 60 * 24 });
+                            delete __params.before;
+                            return;
+                        }
+
+                        data.forEach(function(item){
+                            var url = item.url;
+                            var object = new Image();
+                            object.src = url;
+                            pictures.addUrl(url);
+
+                            __params.before = item._id.$id;
+                            Cookies.set(config.source + __params.tag + 'before', item._id.$id, { expires: 60 * 60 * 24 });
+                        });
+                    }
+                });
+            }
+        };
+
+        const STATE_MAIN = "main";
+        const STATE_PLAY = "play";
+        const STATE_PAUSE = "pause";
+
+        var state = STATE_MAIN;
+
+        /** disable apple app touch */
+        document.ontouchmove = function(event){
+            event.preventDefault();
+        };
+
+        window.onload = function() {
+            "use strict";
+
+            var object = new Image();
+
+            object.onload = function() {
+                document.body.style.backgroundImage="url('/img/start-up-gifs/1v2.gif')";
+                pictures.start();
+            };
+
+            object.src = '/img/start-up-gifs/1v2.gif';
+
+            document.getElementById('start').onclick = function() {
+                changeState();
+                if (screenfull.enabled) {
+                    screenfull.toggle();
+                }
+                event.stopPropagation();
+                return false;
+            };
+
+            document.addEventListener('keydown', function(event) {
+                if (event.keyCode === 32 /*space bar*/) {
+                    changeState();
+                    if (screenfull.enabled) {
+                        screenfull.toggle();
+                    }
+                }
+            });
+
+            document.addEventListener(screenfull.raw.fullscreenchange, function (event) {
+                if (!screenfull.isFullscreen) {
+                    changeState(STATE_PLAY);
+                    cursor.disableHiding();
+                } else {
+                    cursor.enableHiding();
+                }
+            });
+
+            function changeState(force) {
+                force = typeof force !== 'undefined' ? force : false;
+                if (force) {
+                    state = force;
+                }
+
+                if (state === STATE_PLAY) {
+                    document.body.onclick = function(){};
+                    document.getElementById('start').onclick = function(){};
+                    document.getElementById('pause').onclick = function(){
+                        changeState();
+                        if (screenfull.enabled) {
+                            screenfull.toggle();
+                        }
+                        event.stopPropagation();
+                        return false;
+                    };
+
+                    document.body.className = STATE_PAUSE;
+                    document.getElementById('semilayer').className = 'semilayer';
+                    state = STATE_PAUSE;
+                } else if (state === STATE_PAUSE || state === STATE_MAIN) {
+                    document.body.onclick = function(){
+                        changeState();
+                        if (screenfull.enabled) {
+                            screenfull.toggle();
+                        }
+                        event.stopPropagation();
+                    };
+
+                    document.getElementById('pause').onclick = function(){};
+
+                    document.getElementById('semilayer').className = '';
+                    document.body.className = STATE_PLAY;
+                    state = STATE_PLAY;
+                }
+            }
+
+            var cursor = new function () {
+                var __mouseTimer = null, __cursorVisible = true;
+
+                this.enableHiding = function() {
+                    var enable = function() {
+                        if (__mouseTimer) {
+                            window.clearTimeout(__mouseTimer);
+                        }
+                        if (!__cursorVisible) {
+                            document.body.style.cursor = "default";
+                            __cursorVisible = true;
+                        }
+                        __mouseTimer = window.setTimeout(__disappearCursor, 1000);
+                    };
+
+                    enable();
+                    document.onmousemove = enable;
+                };
+
+                this.disableHiding = function() {
+                    document.onmousemove = null;
+
+                    if (__mouseTimer) {
+                        window.clearTimeout(__mouseTimer);
+                    }
+                    if (!__cursorVisible) {
+                        document.body.style.cursor = "default";
+                        __cursorVisible = true;
+                    }
+                };
+
+                function __disappearCursor() {
+                    __mouseTimer = null;
+                    __cursorVisible = false;
+                    document.body.style.cursor = "none";
+                }
+            };
+        }
+    </script>
+
+    <script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+                m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-47742368-2', 'auto');
+        ga('send', 'pageview');
+
+    </script>
+
+</body>
+</html>
